@@ -1,0 +1,19 @@
+packages:
+  - packages/*
+  - apps/*
+catalogs:
+  validation:
+    valibot: ^1.4.0
+  mcp:
+    '@tmcp/adapter-valibot': ^0.1.6
+    '@tmcp/transport-cli': ^0.0.3
+    '@tmcp/transport-stdio': ^0.4.3
+    tmcp: ^1.19.4
+  tooling:
+    '@types/node': ^25.9.1
+    prettier: ^3.8.3
+    typescript: ^6.0.3
+  deps:
+    eventsource: ^4.1.0
+allowBuilds:
+  esbuild: true

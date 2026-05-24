@@ -1,0 +1,25 @@
+{
+	"name": "letmediff",
+	"version": "0.0.1",
+	"description": "MCP server of letmediff.it...allows the agent to show the diff url and receive the diff comments from the server",
+	"main": "src/index.js",
+	"bin": "src/index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"type": "module",
+	"dependencies": {
+		"@tmcp/adapter-valibot": "catalog:mcp",
+		"eventsource": "catalog:deps",
+		"tmcp": "catalog:mcp",
+		"typescript": "catalog:tooling"
+	},
+	"devDependencies": {
+		"@tmcp/transport-stdio": "catalog:mcp",
+		"@types/node": "catalog:tooling",
+		"valibot": "catalog:validation"
+	}
+}
