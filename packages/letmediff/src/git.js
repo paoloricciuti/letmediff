@@ -83,6 +83,13 @@ export class GitCheckpointStore {
 	}
 
 	async reset() {
+		await this.rebaseline();
+		this.checkpoints = [];
+		this.checkpoint_filepaths.clear();
+		this.checkpoint_snapshots.clear();
+	}
+
+	async rebaseline() {
 		const stats = node_fs.statSync(this.path);
 		if (!stats.isDirectory()) {
 			throw new Error(`Expected a directory path, got ${this.path}`);
@@ -99,9 +106,6 @@ export class GitCheckpointStore {
 		this.snapshot = snapshot;
 		this.fs = fs;
 		this.baseline_commit = await initialize_repo(fs, this.path);
-		this.checkpoints = [];
-		this.checkpoint_filepaths.clear();
-		this.checkpoint_snapshots.clear();
 	}
 
 	/**
@@ -169,7 +173,7 @@ export class GitCheckpointStore {
 				after: clone_snapshot(next_snapshot),
 			});
 			this.refresh_future_edits();
-			await this.reset();
+			await this.rebaseline();
 			return latest_checkpoint;
 		}
 
@@ -187,7 +191,7 @@ export class GitCheckpointStore {
 			before: clone_snapshot(this.snapshot),
 			after: clone_snapshot(next_snapshot),
 		});
-		await this.reset();
+		await this.rebaseline();
 		return checkpoint;
 	}
 
