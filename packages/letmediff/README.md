@@ -38,9 +38,10 @@ If `URL` is not set, the CLI posts diffs to `https://letmediff.com`.
 
 ## Tools
 
-The server exposes three MCP tools.
+The server exposes four MCP tools.
 
 - `create_checkpoint`: stores the diff since the previous snapshot under a reviewer-friendly name.
+- `reset_review`: clears all checkpoints and restarts the review from the current working tree. Destructive.
 - `get_url`: uploads the collected checkpoints and returns the shareable `/diff/[id]` URL.
 - `wait_for_feedback`: waits for feedback submitted from the web app and returns it to the agent.
 
