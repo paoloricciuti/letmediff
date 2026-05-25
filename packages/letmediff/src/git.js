@@ -99,6 +99,9 @@ export class GitCheckpointStore {
 		this.snapshot = snapshot;
 		this.fs = fs;
 		this.baseline_commit = await initialize_repo(fs, this.path);
+		this.checkpoints = [];
+		this.checkpoint_filepaths.clear();
+		this.checkpoint_snapshots.clear();
 	}
 
 	/**

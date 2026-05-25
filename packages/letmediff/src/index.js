@@ -50,6 +50,21 @@ server.tool(
 
 server.tool(
 	{
+		name: 'reset_review',
+		description:
+			'Resets the review process. This will clear all checkpoints and start the review from scratch. Use this when the task has completely changed from the previous one but always ask the user before invoking this tool.',
+		annotations: {
+			destructiveHint: true,
+		},
+	},
+	async () => {
+		await git.reset();
+		return tool.text('Checkpoint reset successfully');
+	},
+);
+
+server.tool(
+	{
 		name: 'get_url',
 		description:
 			'Invoke this when the users ask you to review the code to get the URL of the currents diff. After this tool returns you MUST send it to the user and then call the `wait_for_feedback` tool.',

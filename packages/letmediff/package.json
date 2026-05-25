@@ -4,13 +4,15 @@
 	"description": "MCP server of letmediff.it...allows the agent to show the diff url and receive the diff comments from the server",
 	"main": "src/index.js",
 	"exports": {
-		".": "./src/index.js",
-		"./git": "./src/git.js"
+		".": "./src/index.js"
 	},
 	"bin": "src/index.js",
 	"scripts": {
 		"test": "vitest run"
 	},
+	"files": [
+		"src"
+	],
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
