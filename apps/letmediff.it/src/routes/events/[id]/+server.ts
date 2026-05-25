@@ -3,6 +3,7 @@ import { controllers } from '../../diff/[id]/controllers';
 const text_encoder = new TextEncoder();
 
 export function GET({ params: { id } }) {
+	console.log('new connection to diff', id);
 	let _controller: ReadableStreamDefaultController | null = null;
 	return new Response(
 		new ReadableStream({
@@ -23,6 +24,13 @@ export function GET({ params: { id } }) {
 					set.delete(_controller!);
 				}
 			}
-		})
+		}),
+		{
+			headers: {
+				'Content-Type': 'text/event-stream',
+				'Cache-Control': 'no-cache',
+				Connection: 'keep-alive'
+			}
+		}
 	);
 }

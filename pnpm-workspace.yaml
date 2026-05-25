@@ -10,10 +10,36 @@ catalogs:
     '@tmcp/transport-stdio': ^0.4.3
     tmcp: ^1.19.4
   tooling:
-    '@types/node': ^25.9.1
+    '@eslint/compat': ^2.1.0
+    '@eslint/js': ^10.0.1
+    '@playwright/test': ^1.60.0
+    '@types/node': ^24.12.4
+    eslint: ^10.4.0
+    eslint-config-prettier: ^10.1.8
+    eslint-plugin-svelte: ^3.17.1
+    globals: ^17.6.0
+    playwright: ^1.60.0
     prettier: ^3.8.3
+    prettier-plugin-svelte: ^3.5.2
     typescript: ^6.0.3
+    typescript-eslint: ^8.59.4
+    vite: ^8.0.14
   deps:
+    '@jsonjoy.com/fs-snapshot': ^4.57.2
+    '@pierre/diffs': ^1.2.2
+    diff: ^9.0.0
     eventsource: ^4.1.0
+    isomorphic-git: ^1.38.1
+    memfs: ^4.57.2
+  svelte:
+    '@sveltejs/adapter-vercel': ^6.3.3
+    '@sveltejs/kit': ^2.61.0
+    '@sveltejs/vite-plugin-svelte': ^7.1.2
+    svelte: ^5.55.9
+    svelte-check: ^4.4.8
+  vitest:
+    '@vitest/browser-playwright': ^4.1.7
+    vitest: ^4.1.7
+    vitest-browser-svelte: ^2.1.1
 allowBuilds:
   esbuild: true
