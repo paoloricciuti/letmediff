@@ -1,14 +1,13 @@
 #!/usr/bin/env node
-import { McpServer } from 'tmcp';
 import { ValibotJsonSchemaAdapter } from '@tmcp/adapter-valibot';
 import { StdioTransport } from '@tmcp/transport-stdio';
+import { EventSource } from 'eventsource';
+import { McpServer } from 'tmcp';
 import { tool } from 'tmcp/utils';
 import * as v from 'valibot';
-import { EventSource } from 'eventsource';
-import { spawnSync } from 'node:child_process';
+import { create_git_checkpoint_store } from './git.js';
 
 const WEBSITE_URL = process.env.URL ?? 'https://letmediff.com';
-const text_encoder = new TextDecoder();
 
 const created_schema = v.object({
 	id: v.string(),
@@ -32,20 +31,36 @@ const server = new McpServer(
  */
 const feedbacks = new Map();
 
+const git = await create_git_checkpoint_store(process.cwd());
+
+server.tool(
+	{
+		name: 'create_checkpoint',
+		description:
+			"Creates a checkpoint to help the review process. Each checkpoint changes will be displayed as a separate section so create a checkpoint whenever you think it's necessary to split the review in different parts. You can create as many checkpoints as you want and they will be displayed in the order they were created.",
+		schema: v.object({
+			name: v.string(),
+		}),
+	},
+	async ({ name }) => {
+		await git.store_checkpoint(name);
+		return tool.text('Checkpoint created successfully');
+	},
+);
+
 server.tool(
 	{
 		name: 'get_url',
 		description:
-			'Get the URL of the current diff. After this tool returns you MUST send it to the user and then call the `wait_for_feedback` tool.',
+			'Invoke this when the users ask you to review the code to get the URL of the currents diff. After this tool returns you MUST send it to the user and then call the `wait_for_feedback` tool.',
 		outputSchema: v.object({
 			url: v.string(),
 			id: v.string(),
 		}),
 	},
 	async () => {
-		const diff_process = spawnSync('git', ['diff']);
-
-		const diff = text_encoder.decode(diff_process.stdout);
+		await git.merge_checkpoint_if_changed();
+		const diff = git.read_checkpoints();
 
 		const result = await fetch(`${WEBSITE_URL}/create`, {
 			method: 'POST',
@@ -87,7 +102,7 @@ server.tool(
 	{
 		name: 'wait_for_feedback',
 		description:
-			'Wait for the user to provide feedback on the diff. This tool should be called after sending the URL to the user. The tool will return the feedback provided by the user.',
+			"Wait for the user to provide feedback on the diff. The tool will return the feedback provided by the user so after it returns assume that's the user telling you what to do and continue as if it was a message in the chat. If the tool times out invoke it again unless the user told you not to do it.",
 		schema: v.object({
 			id: v.string(),
 		}),

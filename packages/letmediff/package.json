@@ -3,23 +3,32 @@
 	"version": "0.0.1",
 	"description": "MCP server of letmediff.it...allows the agent to show the diff url and receive the diff comments from the server",
 	"main": "src/index.js",
+	"exports": {
+		".": "./src/index.js",
+		"./git": "./src/git.js"
+	},
 	"bin": "src/index.js",
 	"scripts": {
-		"test": "echo \"Error: no test specified\" && exit 1"
+		"test": "vitest run"
 	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
 	"type": "module",
 	"dependencies": {
+		"@jsonjoy.com/fs-snapshot": "catalog:deps",
 		"@tmcp/adapter-valibot": "catalog:mcp",
+		"diff": "catalog:deps",
 		"eventsource": "catalog:deps",
+		"isomorphic-git": "catalog:deps",
+		"memfs": "catalog:deps",
 		"tmcp": "catalog:mcp",
 		"typescript": "catalog:tooling"
 	},
 	"devDependencies": {
 		"@tmcp/transport-stdio": "catalog:mcp",
 		"@types/node": "catalog:tooling",
-		"valibot": "catalog:validation"
+		"valibot": "catalog:validation",
+		"vitest": "catalog:vitest"
 	}
 }
