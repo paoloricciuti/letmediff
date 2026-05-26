@@ -77,22 +77,56 @@ server.tool(
 		await git.merge_checkpoint_if_changed();
 		const diff = git.read_checkpoints();
 
-		const result = await fetch(`${WEBSITE_URL}/create`, {
-			method: 'POST',
-			body: JSON.stringify({ diff }),
-		}).then((res) => res.json());
+		if (diff.length === 0) {
+			return tool.error(
+				'No checkpoints to review. Create at least one checkpoint with `create_checkpoint` before requesting a review URL.',
+			);
+		}
 
-		const { id } = v.parse(created_schema, result);
+		let response;
+		try {
+			response = await fetch(`${WEBSITE_URL}/create`, {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ diff }),
+			});
+		} catch (error) {
+			return tool.error(
+				`Failed to reach letmediff at ${WEBSITE_URL}: ${error instanceof Error ? error.message : String(error)}`,
+			);
+		}
+
+		if (!response.ok) {
+			return tool.error(
+				`letmediff responded with ${response.status} ${response.statusText}`,
+			);
+		}
+
+		const result = await response.json();
+		const parsed = v.safeParse(created_schema, result);
+		if (!parsed.success) {
+			return tool.error(
+				'Unexpected response from letmediff: missing review id.',
+			);
+		}
+		const { id } = parsed.output;
 
 		const url = new URL(WEBSITE_URL);
 		/**
 		 * @type {(results:string[])=>void}
 		 */
 		let resolve_feedback;
+		/**
+		 * @type {(reason:Error)=>void}
+		 */
+		let reject_feedback;
 
-		const feedback_promise = new Promise((resolve) => {
-			resolve_feedback = resolve;
-		});
+		const feedback_promise = /** @type {Promise<string[]>} */ (
+			new Promise((resolve, reject) => {
+				resolve_feedback = resolve;
+				reject_feedback = reject;
+			})
+		);
 		feedbacks.set(id, feedback_promise);
 		const event_url = new URL(url);
 		event_url.pathname = `/events/${id}`;
@@ -100,10 +134,28 @@ server.tool(
 		 * @type {EventSource | null}
 		 */
 		let event_source = new EventSource(event_url.toString());
-		event_source.addEventListener('feedback', ({ data }) => {
-			resolve_feedback(JSON.parse(data));
+		const cleanup = () => {
 			event_source?.close();
 			event_source = null;
+		};
+		event_source.addEventListener('feedback', ({ data }) => {
+			try {
+				resolve_feedback(JSON.parse(data));
+			} catch (error) {
+				reject_feedback(
+					error instanceof Error ? error : new Error(String(error)),
+				);
+			}
+			cleanup();
+		});
+		event_source.addEventListener('error', () => {
+			// EventSource attempts to reconnect on its own; only abort if it gave up.
+			if (event_source?.readyState === EventSource.CLOSED) {
+				reject_feedback(
+					new Error('Lost connection to letmediff feedback stream'),
+				);
+				cleanup();
+			}
 		});
 		url.pathname = `/diff/${id}`;
 		return tool.structured({
@@ -132,10 +184,18 @@ server.tool(
 				"No feedback found for the given id, please invoke the 'get_url' tool first to get a valid id.",
 			);
 		}
-		const feedback = await feedback_promise;
-		return tool.structured({
-			feedback,
-		});
+		try {
+			const feedback = await feedback_promise;
+			return tool.structured({
+				feedback,
+			});
+		} catch (error) {
+			return tool.error(
+				error instanceof Error ? error.message : String(error),
+			);
+		} finally {
+			feedbacks.delete(id);
+		}
 	},
 );
 
