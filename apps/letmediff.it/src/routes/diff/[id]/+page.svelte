@@ -66,6 +66,9 @@
 					<span class="cp-time">{relative(checkpoint.created_at)}</span>
 					<h2>{checkpoint.name}</h2>
 					<span class="cp-caret" aria-hidden="true"></span>
+					{#if checkpoint.description}
+						<p class="cp-desc">{checkpoint.description}</p>
+					{/if}
 				</summary>
 				<div class="cp-body">
 					<div
@@ -540,6 +543,7 @@
 		list-style: none;
 		display: grid;
 		grid-template-columns: max-content max-content 1fr max-content;
+		grid-template-rows: auto auto;
 		align-items: center;
 		gap: 0.65rem;
 		padding: 0.85rem 1rem;
@@ -601,6 +605,13 @@
 
 	.cp-body {
 		padding: 0;
+	}
+
+	.cp-desc {
+		grid-column: 3 / -1;
+		font-size: 0.9rem;
+		color: oklch(90% 0.008 240);
+		margin: 0.25rem 0 0;
 	}
 
 	/* loaded toggle copied from real diff page */
