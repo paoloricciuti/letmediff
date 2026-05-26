@@ -1,11 +1,17 @@
 <script lang="ts">
-	import { CodeView } from '@pierre/diffs';
+	import LineFeedback from '$lib/LineFeedback.svelte';
+	import { CodeView, type CodeViewFileItem, type LineAnnotation } from '@pierre/diffs';
+	import { mount } from 'svelte';
 	import { get_diff, send_feedback } from '../../diff/[id]/diff.remote';
 	import { get_future_edits_sentence, options } from '../../diff/[id]/shared_diff.js';
+	import { SvelteMap } from 'svelte/reactivity';
 
 	let { params } = $props();
 	let feedback = $state('');
-	const lines_feedback: string[] = $state([]);
+	const lines_feedback = new SvelteMap<
+		LineAnnotation<unknown>,
+		{ value: string; line: { start: number; end: number }; file: string }
+	>();
 	const diffs = $derived(await get_diff(params.id));
 	let loaded = $derived.by(() => {
 		let arr = $state(Array(diffs.length).fill(false));
@@ -41,7 +47,6 @@
 <svelte:head>
 	<title>{params.id} · letmediff</title>
 </svelte:head>
-
 <div class="app">
 	<header class="top">
 		<div class="top-line">
@@ -80,7 +85,8 @@
 
 	<main class="stage">
 		{#each diffs as checkpoint, i (checkpoint.created_at)}
-			{@const cp_id = `cp_${String(i + 1).padStart(2, '0')}`}
+			{@const id = `${String(i + 1).padStart(2, '0')}`}
+			{@const cp_id = `cp_${id}`}
 			<details class="cp" id={cp_id} bind:open={details_open[i]}>
 				<summary>
 					<span class="cp-num">{cp_id}</span>
@@ -95,9 +101,70 @@
 					<div
 						class={['code-host', { loaded: loaded[i] }]}
 						{@attach (node) => {
-							const instance = new CodeView({
+							const instance = new CodeView<{
+								id: string;
+								line: { start: number; end: number };
+								item: CodeViewFileItem;
+							}>({
 								...options,
-								onGutterUtilityClick(line) {
+								renderAnnotation(annotation) {
+									const line = annotation.metadata.line;
+									instance.clearSelectedLines();
+									const div = document.createElement('div');
+									const line_feedback = {
+										value: '',
+										line,
+										file: annotation.metadata.item.id,
+									};
+									lines_feedback.set(annotation, line_feedback);
+
+									mount(LineFeedback, {
+										target: div,
+										props: {
+											get value() {
+												return line_feedback?.value ?? '';
+											},
+											set value(v) {
+												line_feedback.value = v;
+											},
+											line,
+											ondelete() {
+												const item = instance.getItem(annotation.metadata.item.id);
+												if (!item) return;
+												// @ts-expect-error dunno
+												instance.updateItem({
+													...item,
+													version: (item.version ?? 0) + 1, // force re-render of the line without the deleted annotation
+													annotations: (item.annotations ?? []).filter(
+														(a) => a.metadata.id !== annotation.metadata.id,
+													),
+												});
+											},
+										},
+									});
+									return div;
+								},
+								onGutterUtilityClick(line, ctx) {
+									console.log(line);
+									instance.updateItem({
+										...ctx.item,
+										version: (ctx.item.version ?? 0) + 1, // force re-render of the line with the new annotation
+										annotations: [
+											// @ts-expect-error dunno
+											...(ctx.item.annotations ?? []),
+											// @ts-expect-error dunno
+											{
+												lineNumber: line.end,
+												side: line.side,
+												metadata: {
+													id: Math.random().toString(36).slice(2),
+													line: { start: line.start, end: line.end },
+													item: ctx.item as never,
+												},
+											},
+										],
+									});
+									instance.render();
 									// gutter affordance enabled; pinning intentionally a no-op here
 									void line;
 								},
@@ -157,7 +224,7 @@
 		class="sheet-form"
 		{...send_feedback}
 		onformdata={(e) => {
-			e.formData.set('line_feedback', JSON.stringify(lines_feedback));
+			e.formData.set('line_feedback', JSON.stringify(Array.from(lines_feedback.values())));
 		}}
 	>
 		<details bind:this={details_form} open={form_open} class="sheet">

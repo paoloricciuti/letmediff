@@ -26,19 +26,34 @@ export const get_diff = query(v.string(), async (id) => {
 	return rendered_diffs;
 });
 
+const line_feedback_schema = v.array(
+	v.object({
+		value: v.string(),
+		line: v.object({
+			start: v.number(),
+			end: v.number(),
+		}),
+		file: v.string(),
+	}),
+);
+
 export const send_feedback = form(
 	v.object({
 		id: v.string(),
 		feedback: v.string(),
-		line_feedback: v.string(),
+		line_feedback: v.optional(v.string()),
 	}),
 	({ id, feedback, line_feedback }) => {
-		console.log(line_feedback);
+		const line_feedback_parsed = line_feedback ? JSON.parse(line_feedback) : [];
+		const line_feedback_validated = v.safeParse(line_feedback_schema, line_feedback_parsed);
+		const lines: v.InferInput<typeof line_feedback_schema> = line_feedback_validated.success
+			? line_feedback_validated.output
+			: [];
 		const id_controllers = controllers.get(id);
 		for (const controller of id_controllers || []) {
 			controller.enqueue(
 				text_encoder.encode(
-					`event: feedback\ndata: ${JSON.stringify([feedback, ...line_feedback])}\n\n`,
+					`event: feedback\ndata: ${JSON.stringify([feedback, ...lines.map((line) => `At line ${line.line.start}-${line.line.end} in file ${line.file}: ${line.value}`)])}\n\n`,
 				),
 			);
 		}
