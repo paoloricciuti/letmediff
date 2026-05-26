@@ -1,18 +1,23 @@
 import { form, query } from '$app/server';
-import { db } from '$lib/db';
+import { diff_schema, storage } from '$lib/db';
+import { preloadPatchFile } from '@pierre/diffs/ssr';
 import * as v from 'valibot';
 import { controllers } from './controllers';
-import { preloadPatchFile } from '@pierre/diffs/ssr';
-import { error } from '@sveltejs/kit';
-import { options } from './shared_diff';
 import default_diff from './diff.json' with { type: 'json' };
+import { options } from './shared_diff';
 
 const text_encoder = new TextEncoder();
 
 export const get_diff = query(v.string(), async (id) => {
-	const diffs = db.get(id) ?? default_diff;
-	if (!diffs) {
-		error(404, 'Diff not found');
+	let diffs: v.InferInput<typeof diff_schema> = default_diff;
+	const string_diff = await storage.getItem(id);
+	if (string_diff) {
+		try {
+			const validated_diff = v.parse(diff_schema, string_diff);
+			diffs = validated_diff;
+		} catch {
+			// fallback to demo diff
+		}
 	}
 	const rendered_diffs = await Promise.all(
 		diffs.map(async (diff) => ({

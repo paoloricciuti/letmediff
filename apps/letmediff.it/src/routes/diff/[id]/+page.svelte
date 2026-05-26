@@ -2,9 +2,9 @@
 	import LineFeedback from '$lib/LineFeedback.svelte';
 	import { CodeView, type CodeViewFileItem, type LineAnnotation } from '@pierre/diffs';
 	import { mount } from 'svelte';
+	import { SvelteMap } from 'svelte/reactivity';
 	import { get_diff, send_feedback } from '../../diff/[id]/diff.remote';
 	import { get_future_edits_sentence, options } from '../../diff/[id]/shared_diff.js';
-	import { SvelteMap } from 'svelte/reactivity';
 
 	let { params } = $props();
 	let feedback = $state('');
@@ -62,6 +62,7 @@
 			<span class="sub-sep" aria-hidden="true"></span>
 			<span class="sub-count">{diffs.length} checkpoint{diffs.length === 1 ? '' : 's'}</span>
 		</p>
+		<p class="ttl-note">The diff is only stored for 15 minutes max.</p>
 	</header>
 
 	<nav class="cp-rail" aria-label="Checkpoints">
@@ -299,12 +300,7 @@
 		border-bottom: 1px solid var(--border);
 	}
 	.sheet[open] {
-		background: linear-gradient(
-			90deg,
-			var(--canvas) 5%,
-			var(--sheet-open),
-			var(--canvas) 95%
-		);
+		background: linear-gradient(90deg, var(--canvas) 5%, var(--sheet-open), var(--canvas) 95%);
 	}
 	.sheet summary {
 		list-style: none;
@@ -495,12 +491,7 @@
 		width: 8px;
 		height: 8px;
 		border-radius: 2px;
-		background: conic-gradient(
-			from 0deg,
-			var(--green),
-			var(--brand-mark-blue),
-			var(--green)
-		);
+		background: conic-gradient(from 0deg, var(--green), var(--brand-mark-blue), var(--green));
 	}
 	.live {
 		display: inline-flex;
@@ -551,6 +542,12 @@
 		height: 3px;
 		border-radius: 50%;
 		background: var(--quiet-low);
+	}
+	.ttl-note {
+		margin: 0.7rem 0 0;
+		font-family: var(--font-mono);
+		font-size: 0.74rem;
+		color: var(--quiet-bright);
 	}
 
 	/* ---- checkpoint rail (anchor links, no JS) ---- */

@@ -44,6 +44,8 @@
 		"@fontsource/geist-mono": "^5.2.8",
 		"@fontsource/geist-sans": "^5.2.5",
 		"@pierre/diffs": "catalog:deps",
+		"@upstash/redis": "catalog:deps",
+		"unstorage": "catalog:deps",
 		"valibot": "catalog:validation"
 	}
 }

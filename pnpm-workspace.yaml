@@ -27,10 +27,12 @@ catalogs:
   deps:
     '@jsonjoy.com/fs-snapshot': ^4.57.2
     '@pierre/diffs': ^1.2.2
+    '@upstash/redis': ^1.38.0
     diff: ^9.0.0
     eventsource: ^4.1.0
     isomorphic-git: ^1.38.1
     memfs: ^4.57.2
+    unstorage: ^1.17.5
   svelte:
     '@sveltejs/adapter-vercel': ^6.3.3
     '@sveltejs/kit': ^2.61.0

@@ -196,7 +196,7 @@
 			<p class="lede">
 				letmediff opens a shareable URL for a curated review of your agent changes. You read the
 				change, scrub the files, leave top-level or line-specific feedback, and the coding session
-				keeps moving while you put the phone down.
+				keeps moving while you put the phone down. Diffs are ephemeral: stored for 15 minutes max.
 			</p>
 			<div class="cta-row">
 				<a class="btn-primary" href="#install">
