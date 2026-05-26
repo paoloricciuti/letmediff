@@ -8,7 +8,8 @@
 	},
 	"bin": "src/index.js",
 	"scripts": {
-		"test": "vitest run"
+		"test": "vitest run",
+		"update:version": "node ./scripts/update-version.js"
 	},
 	"files": [
 		"src"

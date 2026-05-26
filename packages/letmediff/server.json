@@ -1,0 +1,25 @@
+{
+	"$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+	"name": "it.letmediff/mcp",
+	"title": "Letmediff MCP",
+	"description": "The official Letmediff MCP server helping you review your code with an agent first workflow",
+	"repository": {
+		"id": "1054419133",
+		"url": "https://github.com/paoloricciuti/letmediff",
+		"subfolder": "packages/letmediff",
+		"source": "github"
+	},
+	"version": "0.0.2",
+	"websiteUrl": "https://letmediff.it",
+	"packages": [
+		{
+			"registryType": "npm",
+			"identifier": "letmediff",
+			"version": "0.0.2",
+			"runtimeHint": "npx",
+			"transport": {
+				"type": "stdio"
+			}
+		}
+	]
+}
