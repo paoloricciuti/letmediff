@@ -35,47 +35,28 @@ const git = await create_git_checkpoint_store(process.cwd());
 
 server.tool(
 	{
-		name: 'create_checkpoint',
-		description:
-			"Creates a checkpoint to help the review process. Each checkpoint changes will be displayed as a separate section so create a checkpoint whenever you think it's necessary to split the review in different parts. You can create as many checkpoints as you want and they will be displayed in the order they were created.",
-		schema: v.object({
-			name: v.string(),
-		}),
-	},
-	async ({ name }) => {
-		await git.store_checkpoint(name);
-		return tool.text('Checkpoint created successfully');
-	},
-);
-
-server.tool(
-	{
-		name: 'reset_review',
-		description:
-			'Resets the review process. This will clear all checkpoints and start the review from scratch. Use this when the task has completely changed from the previous one but always ask the user before invoking this tool.',
-		annotations: {
-			destructiveHint: true,
-		},
-	},
-	async () => {
-		await git.reset();
-		return tool.text('Checkpoint reset successfully');
-	},
-);
-
-server.tool(
-	{
 		name: 'get_url',
 		description:
-			'Invoke this when the users ask you to review the code to get the URL of the currents diff. After this tool returns you MUST send it to the user and then call the `wait_for_feedback` tool.',
+			'Invoke this when the users ask you to review the code to get the review URL. You can include multiple steps each should be used to guide the user through the best review possible. After this tool returns you MUST send it to the user and then call the `wait_for_feedback` tool.',
+		schema: v.object({
+			steps: v.pipe(
+				v.array(
+					v.object({
+						name: v.string(),
+						description: v.string(),
+						files: v.pipe(v.array(v.string()), v.minLength(1)),
+					}),
+				),
+				v.minLength(1),
+			),
+		}),
 		outputSchema: v.object({
 			url: v.string(),
 			id: v.string(),
 		}),
 	},
-	async () => {
-		await git.merge_checkpoint_if_changed();
-		const diff = git.read_checkpoints();
+	async ({ steps }) => {
+		const diff = await git.store_checkpoints(steps);
 
 		if (diff.length === 0) {
 			return tool.error(
@@ -190,9 +171,7 @@ server.tool(
 				feedback,
 			});
 		} catch (error) {
-			return tool.error(
-				error instanceof Error ? error.message : String(error),
-			);
+			return tool.error(error instanceof Error ? error.message : String(error));
 		} finally {
 			feedbacks.delete(id);
 		}

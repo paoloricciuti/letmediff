@@ -19,7 +19,7 @@ const snapshot_fs =
  */
 
 /**
- * @typedef {{ name: string, diff: string, created_at: Date }} GitCheckpointReference
+ * @typedef {{ name: string, diff: string, created_at: Date, description?: string }} GitCheckpointReference
  */
 
 /**
@@ -27,7 +27,11 @@ const snapshot_fs =
  */
 
 /**
- * @typedef {{ name: string, diff: string, created_at: Date, future_edits: FutureEdits }} GitCheckpoint
+ * @typedef {{ name: string, diff: string, created_at: Date, future_edits: FutureEdits, description?: string }} GitCheckpoint
+ */
+
+/**
+ * @typedef {{ name: string, description?: string, files: string[] }} GitCheckpointInput
  */
 
 /**
@@ -119,6 +123,71 @@ export class GitCheckpointStore {
 		return /** @type {Promise<GitCheckpoint>} */ (
 			this.store_current_snapshot(name, false)
 		);
+	}
+
+	/**
+	 * Stores multiple checkpoints by splitting the current diff by file path.
+	 *
+	 * @param {GitCheckpointInput[]} checkpoint_inputs
+	 * @returns {Promise<GitCheckpoint[]>}
+	 */
+	async store_checkpoints(checkpoint_inputs) {
+		if (!this.snapshot) {
+			throw new Error(
+				'Checkpoint store has not been initialized. Call reset() first.',
+			);
+		}
+
+		const next_snapshot = clone_snapshot(
+			toSnapshotSync({ fs: snapshot_fs, path: this.path }),
+		);
+		remove_entry(next_snapshot, '.git');
+
+		const changed_files = changed_snapshot_files(this.snapshot, next_snapshot);
+		const changed_file_map = new Map(
+			changed_files.map((file) => [file.filepath, file]),
+		);
+		/** @type {GitCheckpoint[]} */
+		const checkpoints = [];
+
+		for (const checkpoint_input of checkpoint_inputs) {
+			const filepaths = [
+				...new Set(
+					checkpoint_input.files.map((filepath) =>
+						normalize_checkpoint_filepath(filepath),
+					),
+				),
+			];
+			const checkpoint_files = filepaths.flatMap((filepath) => {
+				const file = changed_file_map.get(filepath);
+				return file ? [file] : [];
+			});
+
+			if (checkpoint_files.length === 0) continue;
+
+			/** @type {GitCheckpoint} */
+			const checkpoint = {
+				name: checkpoint_input.name,
+				diff: create_snapshot_diff(checkpoint_files),
+				created_at: new Date(),
+				future_edits: {},
+			};
+			if (checkpoint_input.description !== undefined) {
+				checkpoint.description = checkpoint_input.description;
+			}
+
+			this.checkpoints.push(checkpoint);
+			this.checkpoint_filepaths.set(checkpoint, new Set(filepaths));
+			this.checkpoint_snapshots.set(checkpoint, {
+				before: clone_snapshot(this.snapshot),
+				after: clone_snapshot(next_snapshot),
+			});
+			checkpoints.push(checkpoint);
+		}
+
+		this.refresh_future_edits();
+		await this.rebaseline();
+		return checkpoints;
 	}
 
 	/**
@@ -370,15 +439,27 @@ function clone_checkpoint(checkpoint) {
  * @param {GitCheckpoint} checkpoint
  */
 function checkpoint_reference(checkpoint) {
-	return {
+	/** @type {GitCheckpointReference} */
+	const reference = {
 		name: checkpoint.name,
 		diff: checkpoint.diff,
 		created_at: checkpoint.created_at,
 	};
+	if (checkpoint.description !== undefined) {
+		reference.description = checkpoint.description;
+	}
+	return reference;
 }
 
 function generated_checkpoint_name() {
 	return `Final changes ${new Date().toISOString()}`;
+}
+
+/**
+ * @param {string} filepath
+ */
+function normalize_checkpoint_filepath(filepath) {
+	return filepath.replaceAll('\\', '/').replace(/^\.\//, '').replace(/^\/+/, '');
 }
 
 /**

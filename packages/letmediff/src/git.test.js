@@ -236,6 +236,69 @@ describe('git checkpoint store', () => {
 		expect(third.future_edits).toEqual({});
 	});
 
+	test('stores multiple checkpoints by splitting the current diff by requested files', async () => {
+		const dir = create_temp_dir();
+		write_fixture(dir, 'a.txt', 'one\n');
+		write_fixture(dir, 'b.txt', 'one\n');
+
+		const store = await create_git_checkpoint_store(dir);
+		write_fixture(dir, 'a.txt', 'two\n');
+		write_fixture(dir, 'b.txt', 'two\n');
+
+		const checkpoints = await store.store_checkpoints([
+			{
+				name: 'Task 1',
+				description: 'Updated a because it belongs to task 1',
+				files: ['./a.txt'],
+			},
+			{
+				name: 'Task 2',
+				description: 'Updated b because it belongs to task 2',
+				files: ['./b.txt'],
+			},
+		]);
+
+		expect(checkpoints.map(({ name }) => name)).toEqual(['Task 1', 'Task 2']);
+		expect(checkpoints[0]?.description).toBe(
+			'Updated a because it belongs to task 1',
+		);
+		expect(checkpoints[0]?.diff).toContain('--- a/a.txt');
+		expect(checkpoints[0]?.diff).not.toContain('--- a/b.txt');
+		expect(checkpoints[1]?.diff).toContain('--- a/b.txt');
+		expect(checkpoints[1]?.diff).not.toContain('--- a/a.txt');
+		expect(store.read_checkpoints().map(({ name }) => name)).toEqual([
+			'Task 1',
+			'Task 2',
+		]);
+		expect(await store.merge_checkpoint_if_changed()).toBeNull();
+	});
+
+	test('allows the same file in multiple bulk checkpoints and tracks future edits', async () => {
+		const dir = create_temp_dir();
+		write_fixture(dir, 'a.txt', 'one\n');
+
+		const store = await create_git_checkpoint_store(dir);
+		write_fixture(dir, 'a.txt', 'two\n');
+
+		const checkpoints = await store.store_checkpoints([
+			{ name: 'Task 1', description: 'First task', files: ['./a.txt'] },
+			{ name: 'Task 2', description: 'Second task', files: ['a.txt'] },
+		]);
+		const first_checkpoint = store.read_checkpoint('Task 1');
+
+		expect(checkpoints).toHaveLength(2);
+		expect(first_checkpoint?.future_edits).toEqual({
+			'a.txt': [
+				{
+					name: 'Task 2',
+					description: 'Second task',
+					diff: checkpoints[1]?.diff,
+					created_at: checkpoints[1]?.created_at,
+				},
+			],
+		});
+	});
+
 	test('records deleted files', async () => {
 		const dir = create_temp_dir();
 		write_fixture(dir, 'a.txt', 'one\n');
