@@ -31,7 +31,6 @@ export function get_future_edits_sentence(
 	checkpoint: { future_edits: Record<string, { name: string }[]> },
 ) {
 	const future_edits = checkpoint.future_edits[name.substring(2)];
-	console.log({ future_edits, name: name.substring(2) });
 	if (!future_edits) return undefined;
 	return `'Re-edited in: ${list_formatter.format([...future_edits].map((fe) => `"${fe.name}"`))}'`;
 }
