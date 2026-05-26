@@ -1,6 +1,6 @@
 {
 	"name": "letmediff",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"description": "MCP server of letmediff.it...allows the agent to show the diff url and receive the diff comments from the server",
 	"main": "src/index.js",
 	"exports": {
