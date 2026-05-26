@@ -27,6 +27,7 @@
 	"author": "",
 	"license": "ISC",
 	"type": "module",
+	"packageManager": "pnpm@11.2.2",
 	"dependencies": {
 		"@jsonjoy.com/fs-snapshot": "catalog:deps",
 		"@tmcp/adapter-valibot": "catalog:mcp",
