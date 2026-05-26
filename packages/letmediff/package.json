@@ -9,7 +9,7 @@
 	"bin": "src/index.js",
 	"scripts": {
 		"test": "vitest run",
-		"update:version": "node ./scripts/update-version.js"
+		"update:version": "node ./scripts/update-version.ts"
 	},
 	"files": [
 		"src"
