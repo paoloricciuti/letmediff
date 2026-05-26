@@ -4,12 +4,27 @@
 	import { get_future_edits_sentence, options } from '../../diff/[id]/shared_diff.js';
 
 	let { params } = $props();
-	let loaded = $state(false);
 	let feedback = $state('');
 	const lines_feedback: string[] = $state([]);
 	const diffs = $derived(await get_diff(params.id));
+	let loaded = $derived.by(() => {
+		let arr = $state(Array(diffs.length).fill(false));
+		return arr;
+	});
 
-	const relative_time_formatter = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+	let details_open = $derived.by(() => {
+		let arr = $state(Array(diffs.length).fill(false));
+		arr[0] = true; // open first checkpoint by default
+		return arr;
+	});
+
+	let form_open = $state(false);
+	let details_form: HTMLDetailsElement;
+
+	const relative_time_formatter = new Intl.RelativeTimeFormat('en', {
+		numeric: 'auto',
+		style: 'short',
+	});
 	const now = Date.now();
 	function relative(iso: string) {
 		const then = new Date(iso).getTime();
@@ -48,7 +63,13 @@
 		<div class="cp-rail-track">
 			{#each diffs as checkpoint, i (checkpoint.created_at)}
 				{@const cp_id = `cp_${String(i + 1).padStart(2, '0')}`}
-				<a class="cp-pill" href="#{cp_id}">
+				<a
+					onclick={() => {
+						details_open[i] = true;
+					}}
+					class="cp-pill"
+					href="#{cp_id}"
+				>
 					<span class="cp-pill-num">{String(i + 1).padStart(2, '0')}</span>
 					<span class="cp-pill-name">{checkpoint.name}</span>
 					<span class="cp-pill-time">{relative(checkpoint.created_at)}</span>
@@ -60,7 +81,7 @@
 	<main class="stage">
 		{#each diffs as checkpoint, i (checkpoint.created_at)}
 			{@const cp_id = `cp_${String(i + 1).padStart(2, '0')}`}
-			<details class="cp" id={cp_id} open={i === 0}>
+			<details class="cp" id={cp_id} bind:open={details_open[i]}>
 				<summary>
 					<span class="cp-num">{cp_id}</span>
 					<span class="cp-time">{relative(checkpoint.created_at)}</span>
@@ -72,7 +93,7 @@
 				</summary>
 				<div class="cp-body">
 					<div
-						class={['code-host', { loaded }]}
+						class={['code-host', { loaded: loaded[i] }]}
 						{@attach (node) => {
 							const instance = new CodeView({
 								...options,
@@ -85,7 +106,7 @@
 									if (css_variable) {
 										element.style.setProperty('--edits', css_variable);
 									}
-									loaded = true;
+									loaded[i] = true;
 								},
 							});
 							instance.setup(node);
@@ -98,7 +119,7 @@
 							);
 						}}
 					></div>
-					{#if !loaded}
+					{#if !loaded[i]}
 						<div class="ssr">
 							{#each checkpoint.diff as diffed (diffed.fileDiff.name)}
 								<diff-view
@@ -113,6 +134,23 @@
 				</div>
 			</details>
 		{/each}
+		<div
+			{@attach (node) => {
+				const intersection = new IntersectionObserver(
+					([entry]) => {
+						if (details_form.open && !form_open) return;
+						form_open = entry.isIntersecting;
+					},
+					{
+						threshold: 1,
+					},
+				);
+				intersection.observe(node);
+				return () => {
+					intersection.disconnect();
+				};
+			}}
+		></div>
 	</main>
 
 	<form
@@ -122,7 +160,7 @@
 			e.formData.set('line_feedback', JSON.stringify(lines_feedback));
 		}}
 	>
-		<details class="sheet">
+		<details bind:this={details_form} open={form_open} class="sheet">
 			<summary>
 				<span class="sheet-leading" aria-hidden="true">
 					<span class="caret"></span>
@@ -174,7 +212,9 @@
 		min-height: 100dvh;
 		max-width: 56rem;
 		margin: 0 auto;
-		padding-bottom: 6rem;
+		display: grid;
+		grid-template-rows: auto auto 1fr auto;
+		grid-template-columns: 100%;
 	}
 
 	/* ---- sticky command sheet ---- */
@@ -183,6 +223,7 @@
 		bottom: 0;
 		z-index: 50;
 		margin: 0;
+		margin-top: auto;
 	}
 	.sheet {
 		background: oklch(14% 0.01 240 / 0.78);
@@ -191,7 +232,12 @@
 		border-bottom: 1px solid oklch(22% 0.012 240);
 	}
 	.sheet[open] {
-		background: oklch(15% 0.012 240 / 0.95);
+		background: linear-gradient(
+			90deg,
+			var(--canvas) 5%,
+			oklch(15% 0.012 240 / 0.95),
+			var(--canvas) 95%
+		);
 	}
 	.sheet summary {
 		list-style: none;
@@ -624,7 +670,7 @@
 	.ssr {
 		display: grid;
 		gap: 8px;
-		padding: 8px;
+		padding-block: 8px;
 	}
 
 	@media (prefers-reduced-motion: reduce) {
