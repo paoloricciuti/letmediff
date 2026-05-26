@@ -1,0 +1,182 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-25T00:00:00.000Z",
+  "title": "Design System: letmediff",
+  "extensions": {
+    "colorMeta": {
+      "diff-slate-canvas": {
+        "role": "neutral",
+        "displayName": "Diff Slate Canvas",
+        "canonical": "oklch(12% 0.008 240)",
+        "tonalRamp": [
+          "oklch(12% 0.008 240)",
+          "oklch(14% 0.01 240)",
+          "oklch(16% 0.012 240)",
+          "oklch(22% 0.012 240)",
+          "oklch(38% 0.012 240)",
+          "oklch(55% 0.012 240)",
+          "oklch(72% 0.012 240)",
+          "oklch(92% 0.006 240)"
+        ]
+      },
+      "handoff-green": {
+        "role": "primary",
+        "displayName": "Handoff Green",
+        "canonical": "oklch(75% 0.18 165)",
+        "tonalRamp": [
+          "oklch(18% 0.04 165)",
+          "oklch(28% 0.07 165)",
+          "oklch(40% 0.1 165)",
+          "oklch(52% 0.14 165)",
+          "oklch(64% 0.17 165)",
+          "oklch(75% 0.18 165)",
+          "oklch(82% 0.16 165)",
+          "oklch(92% 0.08 165)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Page-level review title only."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Checkpoint names and dense section titles."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Main UI text and feedback body."
+      },
+      "label": {
+        "displayName": "Mono Label",
+        "purpose": "IDs, numbers, timestamps, state labels, and keyboard hints."
+      }
+    },
+    "shadows": [
+      {
+        "name": "Focus Glow",
+        "value": "0 0 0 3px oklch(75% 0.18 165 / 0.18)",
+        "purpose": "Textarea and actionable focus states."
+      },
+      {
+        "name": "Live Pulse",
+        "value": "0 0 0 3px oklch(75% 0.18 165 / 0.2)",
+        "purpose": "Live-state dot only, animated off under reduced motion."
+      },
+      {
+        "name": "Target Ring",
+        "value": "0 0 0 3px oklch(75% 0.18 165 / 0.12)",
+        "purpose": "Checkpoint targeted by anchor navigation."
+      }
+    ],
+    "motion": [
+      {
+        "name": "state-fast",
+        "value": "160ms cubic-bezier(0.22, 1, 0.36, 1)",
+        "purpose": "Fast hover, border, and background feedback."
+      },
+      {
+        "name": "state-medium",
+        "value": "200ms cubic-bezier(0.22, 1, 0.36, 1)",
+        "purpose": "Caret rotation and small icon movement."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "mobile-compact",
+        "value": "540px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Send Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary action for returning feedback to the waiting agent.",
+      "html": "<button class=\"ds-btn-primary\">Send to agent <span aria-hidden=\"true\">&rarr;</span></button>",
+      "css": ".ds-btn-primary { font-family: -apple-system, BlinkMacSystemFont, Inter, system-ui, sans-serif; font-size: 0.92rem; font-weight: 600; min-height: 40px; padding: 0.65rem 1rem; border: 0; border-radius: 8px; background: oklch(75% 0.18 165); color: oklch(13% 0.04 165); display: inline-flex; align-items: center; gap: 0.45rem; cursor: pointer; transition: background 160ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-btn-primary:hover { background: oklch(80% 0.18 165); } .ds-btn-primary:focus-visible { outline: 2px solid oklch(75% 0.18 165); outline-offset: 2px; box-shadow: 0 0 0 3px oklch(75% 0.18 165 / 0.18); } .ds-btn-primary span { transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-btn-primary:hover span { transform: translateX(3px); }"
+    },
+    {
+      "name": "Feedback Textarea",
+      "kind": "input",
+      "refersTo": "input-feedback",
+      "description": "Expanded feedback field inside the sticky command sheet.",
+      "html": "<textarea class=\"ds-feedback\" rows=\"4\" placeholder=\"Tell the agent what to do next.\"></textarea>",
+      "css": ".ds-feedback { box-sizing: border-box; width: 100%; resize: vertical; font-family: -apple-system, BlinkMacSystemFont, Inter, system-ui, sans-serif; font-size: 0.95rem; line-height: 1.55; padding: 0.8rem 0.9rem; background: oklch(10% 0.008 240); color: oklch(95% 0.006 240); border: 1px solid oklch(24% 0.012 240); border-radius: 10px; } .ds-feedback::placeholder { color: oklch(46% 0.012 240); } .ds-feedback:focus { outline: none; border-color: oklch(75% 0.18 165); box-shadow: 0 0 0 3px oklch(75% 0.18 165 / 0.18); }"
+    },
+    {
+      "name": "Checkpoint Pill",
+      "kind": "chip",
+      "refersTo": "checkpoint-pill",
+      "description": "Scrollable checkpoint navigation item for mobile review.",
+      "html": "<a class=\"ds-cp-pill\" href=\"#\"><span class=\"ds-cp-num\">01</span><span class=\"ds-cp-name\">Update review flow</span><span class=\"ds-cp-time\">2 minutes ago</span></a>",
+      "css": ".ds-cp-pill { min-width: 12rem; display: grid; grid-template-columns: max-content 1fr; grid-template-rows: auto auto; grid-template-areas: 'num name' 'num time'; column-gap: 0.65rem; row-gap: 0.15rem; padding: 0.7rem 0.85rem; background: oklch(15% 0.011 240); border: 1px solid oklch(22% 0.013 240); border-radius: 10px; color: inherit; text-decoration: none; cursor: pointer; transition: background 160ms cubic-bezier(0.22, 1, 0.36, 1), border-color 160ms cubic-bezier(0.22, 1, 0.36, 1); } .ds-cp-pill:hover { background: oklch(18% 0.013 240); } .ds-cp-pill:focus-visible { outline: 2px solid oklch(75% 0.18 165); outline-offset: 2px; } .ds-cp-num { grid-area: num; align-self: center; font-family: ui-monospace, SF Mono, monospace; font-size: 0.7rem; color: oklch(50% 0.012 240); font-variant-numeric: tabular-nums; padding: 0.2rem 0.4rem; background: oklch(11% 0.008 240); border-radius: 4px; } .ds-cp-name { grid-area: name; font-family: -apple-system, BlinkMacSystemFont, Inter, system-ui, sans-serif; font-size: 0.9rem; font-weight: 540; color: oklch(94% 0.008 240); line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .ds-cp-time { grid-area: time; font-family: ui-monospace, SF Mono, monospace; font-size: 0.7rem; color: oklch(50% 0.012 240); }"
+    },
+    {
+      "name": "Review Container",
+      "kind": "card",
+      "refersTo": "checkpoint-container",
+      "description": "Flat checkpoint surface with tonal summary header.",
+      "html": "<section class=\"ds-review-container\"><header><span>cp_01</span><strong>Review checkpoint</strong></header><div class=\"ds-review-body\">Diff content sits here.</div></section>",
+      "css": ".ds-review-container { overflow: hidden; background: oklch(14% 0.01 240); border: 1px solid oklch(22% 0.012 240); border-radius: 12px; color: oklch(92% 0.006 240); font-family: -apple-system, BlinkMacSystemFont, Inter, system-ui, sans-serif; } .ds-review-container header { display: flex; align-items: center; gap: 0.65rem; padding: 0.85rem 1rem; background: oklch(16% 0.012 240); border-bottom: 1px solid oklch(22% 0.012 240); } .ds-review-container span { font-family: ui-monospace, SF Mono, monospace; font-size: 0.7rem; letter-spacing: 0.04em; color: oklch(60% 0.012 240); padding: 0.2rem 0.45rem; background: oklch(11% 0.008 240); border-radius: 4px; } .ds-review-container strong { font-size: 1.05rem; font-weight: 560; line-height: 1.2; color: oklch(96% 0.006 240); } .ds-review-body { padding: 1rem; color: oklch(72% 0.012 240); }"
+    },
+    {
+      "name": "Live Badge",
+      "kind": "chip",
+      "refersTo": "live-badge",
+      "description": "Small live-session indicator showing the handoff channel is active.",
+      "html": "<span class=\"ds-live\"><span aria-hidden=\"true\"></span>live</span>",
+      "css": ".ds-live { display: inline-flex; align-items: center; gap: 0.45rem; font-family: ui-monospace, SF Mono, monospace; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: oklch(75% 0.18 165); } .ds-live span { width: 6px; height: 6px; border-radius: 50%; background: oklch(75% 0.18 165); box-shadow: 0 0 0 3px oklch(75% 0.18 165 / 0.2); animation: ds-breathe 2.4s ease-in-out infinite; } @keyframes ds-breathe { 50% { box-shadow: 0 0 0 6px oklch(75% 0.18 165 / 0); } } @media (prefers-reduced-motion: reduce) { .ds-live span { animation: none; } }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Pocket Review Console",
+    "overview": "letmediff is a compact, surgical review surface for developers reading agent-produced diffs away from their main workstation. The interface should feel like a serious console compressed for a phone: dark enough for focused code inspection, dense enough to preserve context, and direct enough that feedback can leave the reviewer's thumb and reach the waiting agent without ceremony. The system uses familiar diff-review grammar, but the surrounding chrome has its own mobile-aware character.",
+    "keyCharacteristics": [
+      "Compact dark console surfaces with blue-slate tinting, never pure black.",
+      "One decisive action color, Handoff Green, reserved for feedback, live state, focus, and targeted review state.",
+      "Dense but touchable mobile controls: small visual footprint, forgiving hit areas.",
+      "Familiar review primitives with small live-session details, not decorative spectacle."
+    ],
+    "rules": [
+      {
+        "name": "The One Signal Rule",
+        "body": "Handoff Green is rare on purpose. If more than one thing on a mobile viewport looks equally green, the reviewer cannot tell what returns feedback to the agent.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tinted Dark Rule",
+        "body": "Every neutral must stay blue-slate tinted. Pure #000 and #fff are forbidden because they flatten code review into generic terminal cosplay.",
+        "section": "colors"
+      },
+      {
+        "name": "The Metadata Is Mono Rule",
+        "body": "Anything that identifies, timestamps, indexes, or routes the review uses mono. Human-readable decisions stay in the sans stack.",
+        "section": "typography"
+      },
+      {
+        "name": "The State Creates Lift Rule",
+        "body": "Nothing floats just to look premium. Lift must mean focus, target, live status, or active handoff.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do keep mobile review as the stress test. A checkpoint pill, feedback control, or diff header that works only on desktop is unfinished.",
+      "Do reserve Handoff Green for send actions, live state, focus, selected checkpoint state, and direct agent handoff.",
+      "Do use familiar diff-review conventions where they reduce learning cost.",
+      "Do keep density high, but preserve touch targets around 40px for primary actions.",
+      "Do use mono type for IDs, timestamps, checkpoint numbers, keyboard hints, and session metadata.",
+      "Do support reduced motion by removing transitions and live pulse animation."
+    ],
+    "donts": [
+      "Don't use generic SaaS dashboard patterns: interchangeable cards, blue gradients, hero metrics, or marketing-template polish.",
+      "Don't use toy AI-product aesthetics: purple glow, chat-bubble metaphors everywhere, novelty controls, or unserious language.",
+      "Don't clone GitHub wholesale. Diff conventions are useful; the product chrome needs its own compact, mobile-aware review character.",
+      "Don't use side-stripe borders, gradient text, default glassmorphism, or identical icon-card grids.",
+      "Don't let Handoff Green become decoration. If it does not mean action, live state, focus, or target, it should probably be slate.",
+      "Don't use pure #000 or #fff; tint every neutral toward the Diff Slate hue."
+    ]
+  }
+}
