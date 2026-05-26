@@ -5,11 +5,12 @@ import { controllers } from './controllers';
 import { preloadPatchFile } from '@pierre/diffs/ssr';
 import { error } from '@sveltejs/kit';
 import { options } from './shared_diff';
+import default_diff from './diff.json' with { type: 'json' };
 
 const text_encoder = new TextEncoder();
 
 export const get_diff = query(v.string(), async (id) => {
-	const diffs = db.get(id);
+	const diffs = db.get(id) ?? default_diff;
 	if (!diffs) {
 		error(404, 'Diff not found');
 	}

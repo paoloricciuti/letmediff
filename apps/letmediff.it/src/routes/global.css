@@ -1,0 +1,41 @@
+:root {
+	--canvas: oklch(12% 0.008 240);
+	--panel: oklch(14% 0.01 240);
+	--raised: oklch(16% 0.012 240);
+	--inset: oklch(10% 0.008 240);
+	--ink: oklch(98% 0.005 240);
+	--text: oklch(92% 0.006 240);
+	--muted: oklch(55% 0.012 240);
+	--quiet: oklch(40% 0.012 240);
+	--border: oklch(22% 0.012 240);
+	--border-soft: oklch(19% 0.012 240);
+	--green: oklch(75% 0.18 165);
+	--green-hover: oklch(80% 0.18 165);
+	--green-ink: oklch(13% 0.04 165);
+	--green-soft: oklch(75% 0.18 165 / 0.12);
+	--add: oklch(70% 0.14 158);
+	--add-bg: oklch(28% 0.06 158 / 0.32);
+	--del: oklch(72% 0.15 25);
+	--del-bg: oklch(30% 0.08 25 / 0.3);
+
+	--font-sans: 'Geist Sans', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+	--font-mono: 'Geist Mono', ui-monospace, 'SF Mono', monospace;
+}
+
+html,
+body {
+	background: var(--canvas);
+	color: var(--text);
+	font-family: var(--font-sans);
+	font-size: 14.5px;
+	font-feature-settings: 'ss01', 'ss02', 'cv11';
+	line-height: 1.55;
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
+	margin: 0;
+	padding: 0;
+}
+
+* {
+	box-sizing: border-box;
+}
