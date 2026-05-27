@@ -119,29 +119,43 @@ server.tool(
 		 * @type {EventSource | null}
 		 */
 		let event_source = new EventSource(event_url.toString());
+		let controller = new AbortController();
 		const cleanup = () => {
 			event_source?.close();
 			event_source = null;
+			controller.abort();
 		};
-		event_source.addEventListener('feedback', ({ data }) => {
-			try {
-				resolve_feedback(JSON.parse(data));
-			} catch (error) {
-				reject_feedback(
-					error instanceof Error ? error : new Error(String(error)),
-				);
-			}
-			cleanup();
-		});
-		event_source.addEventListener('error', () => {
-			// EventSource attempts to reconnect on its own; only abort if it gave up.
-			if (event_source?.readyState === EventSource.CLOSED) {
-				reject_feedback(
-					new Error('Lost connection to letmediff feedback stream'),
-				);
+		event_source.addEventListener(
+			'feedback',
+			({ data }) => {
+				try {
+					resolve_feedback(JSON.parse(data));
+				} catch (error) {
+					reject_feedback(
+						error instanceof Error ? error : new Error(String(error)),
+					);
+				}
 				cleanup();
-			}
-		});
+			},
+			{
+				signal: controller.signal,
+			},
+		);
+		event_source.addEventListener(
+			'error',
+			() => {
+				// EventSource attempts to reconnect on its own; only abort if it gave up.
+				if (event_source?.readyState === EventSource.CLOSED) {
+					reject_feedback(
+						new Error('Lost connection to letmediff feedback stream'),
+					);
+					cleanup();
+				}
+			},
+			{
+				signal: controller.signal,
+			},
+		);
 		url.pathname = `/diff/${id}`;
 		return tool.structured({
 			url: url.toString(),
