@@ -31,7 +31,7 @@ const server = new McpServer(
  */
 const feedbacks = new Map();
 
-const git = await create_git_checkpoint_store(process.cwd());
+const git_promise = create_git_checkpoint_store(process.cwd());
 
 server.tool(
 	{
@@ -56,6 +56,7 @@ server.tool(
 		}),
 	},
 	async ({ steps }) => {
+		const git = await git_promise;
 		const diff = await git.store_checkpoints(steps);
 
 		if (diff.length === 0) {
