@@ -46,8 +46,19 @@ server.tool(
 				v.array(
 					v.object({
 						name: v.string(),
-						description: v.string(),
-						files: v.pipe(v.array(v.string()), v.minLength(1)),
+						description: v.pipe(
+							v.string(),
+							v.description(
+								'A description of the changes, try to explain why you made them and any context that might be useful for the reviewer/questionable choices you made.',
+							),
+						),
+						files: v.pipe(
+							v.array(v.string()),
+							v.minLength(1),
+							v.description(
+								'A list of files related to the change you want the user to review. They MUST be relative paths to the cwd',
+							),
+						),
 					}),
 				),
 				v.minLength(1),
