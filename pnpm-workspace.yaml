@@ -26,6 +26,7 @@ catalogs:
     vite: ^8.0.14
   deps:
     '@jsonjoy.com/fs-snapshot': ^4.57.2
+    '@neoconfetti/svelte': ^2.2.2
     '@pierre/diffs': ^1.2.2
     '@upstash/redis': ^1.38.0
     diff: ^9.0.0
@@ -43,5 +44,8 @@ catalogs:
     '@vitest/browser-playwright': ^4.1.7
     vitest: ^4.1.7
     vitest-browser-svelte: ^2.1.1
+  fonts:
+    '@fontsource/geist-mono': ^5.2.8
+    '@fontsource/geist-sans': ^5.2.5
 allowBuilds:
   esbuild: true

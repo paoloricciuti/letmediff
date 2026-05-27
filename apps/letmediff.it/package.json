@@ -41,8 +41,9 @@
 		"vitest-browser-svelte": "catalog:vitest"
 	},
 	"dependencies": {
-		"@fontsource/geist-mono": "^5.2.8",
-		"@fontsource/geist-sans": "^5.2.5",
+		"@fontsource/geist-mono": "catalog:fonts",
+		"@fontsource/geist-sans": "catalog:fonts",
+		"@neoconfetti/svelte": "catalog:deps",
 		"@pierre/diffs": "catalog:deps",
 		"@upstash/redis": "catalog:deps",
 		"unstorage": "catalog:deps",

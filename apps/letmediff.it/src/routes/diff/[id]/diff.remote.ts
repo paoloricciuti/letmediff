@@ -8,9 +8,10 @@ import { options } from './shared_diff';
 import { error } from '@sveltejs/kit';
 
 const text_encoder = new TextEncoder();
+const DEMO_ID = 'demo';
 
 export const get_diff = query(v.string(), async (id) => {
-	let diffs: v.InferInput<typeof diff_schema> | null = id === 'demo' ? default_diff : null;
+	let diffs: v.InferInput<typeof diff_schema> | null = id === DEMO_ID ? default_diff : null;
 	const string_diff = await storage.getItem(id);
 	if (string_diff) {
 		try {
@@ -53,12 +54,18 @@ export const send_feedback = form(
 		line_feedback: v.optional(v.string()),
 	}),
 	({ id, feedback, line_feedback }) => {
+		if (id === DEMO_ID) {
+			return { success: Math.random() < 0.5 };
+		}
 		const line_feedback_parsed = line_feedback ? JSON.parse(line_feedback) : [];
 		const line_feedback_validated = v.safeParse(line_feedback_schema, line_feedback_parsed);
 		const lines: v.InferInput<typeof line_feedback_schema> = line_feedback_validated.success
 			? line_feedback_validated.output
 			: [];
 		const id_controllers = controllers.get(id);
+		if (!id_controllers || id_controllers.size === 0) {
+			return { success: false };
+		}
 		for (const controller of id_controllers || []) {
 			controller.enqueue(
 				text_encoder.encode(
@@ -66,5 +73,7 @@ export const send_feedback = form(
 				),
 			);
 		}
+
+		return { success: true };
 	},
 );

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import LineFeedback from '$lib/LineFeedback.svelte';
+	import { confetti } from '@neoconfetti/svelte';
 	import { CodeView, type CodeViewFileItem, type LineAnnotation } from '@pierre/diffs';
 	import { mount } from 'svelte';
 	import { SvelteMap } from 'svelte/reactivity';
@@ -26,6 +27,8 @@
 
 	let form_open = $state(false);
 	let details_form: HTMLDetailsElement;
+
+	let feedback_flashcard = $derived(!send_feedback.pending && send_feedback.result);
 
 	const relative_time_formatter = new Intl.RelativeTimeFormat('en', {
 		numeric: 'auto',
@@ -64,6 +67,48 @@
 		</p>
 		<p class="ttl-note">The diff is only stored for 15 minutes max.</p>
 	</header>
+
+	{#if feedback_flashcard}
+		{#if send_feedback.result?.success}
+			<div
+				class="confetti-anchor"
+				aria-hidden="true"
+				use:confetti={{
+					stageHeight: window.innerHeight,
+					particleSize: 15,
+					force: 0.3,
+				}}
+			></div>
+		{/if}
+		<div
+			{@attach (node) => {
+				node.addEventListener(
+					'animationend',
+					() => {
+						feedback_flashcard = false;
+					},
+					{ once: true },
+				);
+			}}
+			class={['sent-pop', { success: send_feedback.result?.success }]}
+			role="status"
+			aria-live="polite"
+		>
+			{#if send_feedback.result?.success}
+				<span class="sent-badge" aria-hidden="true">✓</span>
+				<span class="sent-copy">
+					<strong>Feedback sent.</strong>
+					<span> Check back on your agent. </span>
+				</span>
+			{:else}
+				<span class="sent-badge" aria-hidden="true">!</span>
+				<span class="sent-copy">
+					<strong>Failed to send feedback.</strong>
+					<span> Please try again. </span>
+				</span>
+			{/if}
+		</div>
+	{/if}
 
 	<nav class="cp-rail" aria-label="Checkpoints">
 		<div class="cp-rail-track">
@@ -292,6 +337,77 @@
 		z-index: 50;
 		margin: 0;
 		margin-top: auto;
+	}
+	.sent-pop {
+		--timing: 250ms;
+		--main_color: var(--green);
+		position: fixed;
+		left: 50%;
+		translate: -50% 5vh;
+		width: min(28rem, calc(100% - var(--page-gutter) * 2));
+		margin: 0 auto var(--space-sm);
+		padding: 0.75rem 0.85rem;
+		display: flex;
+		align-items: center;
+		gap: 0.7rem;
+		background: color-mix(in srgb, var(--main_color) 16%, var(--canvas));
+		border: 1px solid color-mix(in srgb, var(--main_color) 42%, var(--border));
+		border-radius: var(--radius-lg);
+		box-shadow: 0 16px 36px color-mix(in srgb, var(--main_color) 16%, transparent);
+		color: var(--text-bright);
+		overflow: visible;
+		transition: translate var(--timing);
+		animation: back-away var(--timing) 3s forwards;
+		z-index: 50;
+		pointer-events: none;
+
+		@starting-style {
+			translate: -50% -100%;
+		}
+
+		&:not(.success) {
+			--main_color: var(--del);
+		}
+	}
+
+	@keyframes back-away {
+		99% {
+			translate: -50% -100%;
+		}
+		100% {
+			translate: -50% 5vh;
+			display: none;
+		}
+	}
+	.confetti-anchor {
+		position: fixed;
+		top: 0;
+		left: 50%;
+		pointer-events: none;
+	}
+	.sent-badge {
+		width: 1.7rem;
+		height: 1.7rem;
+		flex: 0 0 auto;
+		display: grid;
+		place-items: center;
+		border-radius: 999px;
+		background: var(--main_color);
+		color: var(--green-ink);
+		font-weight: 800;
+		box-shadow: 0 0 18px color-mix(in srgb, var(--main_color) 16%, transparent);
+	}
+	.sent-copy {
+		display: grid;
+		gap: 0.1rem;
+		font-size: 0.85rem;
+		line-height: 1.2;
+	}
+	.sent-copy strong {
+		font-size: 0.9rem;
+	}
+	.sent-copy span {
+		color: var(--text-soft);
 	}
 	.sheet {
 		background: var(--sheet-scrim);
