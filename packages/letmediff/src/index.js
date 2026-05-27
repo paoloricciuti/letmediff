@@ -7,7 +7,7 @@ import { tool } from 'tmcp/utils';
 import * as v from 'valibot';
 import { create_git_checkpoint_store } from './git.js';
 
-const WEBSITE_URL = process.env.URL ?? 'https://letmediff.com';
+const WEBSITE_URL = process.env.URL ?? 'https://letmediff.it';
 
 const created_schema = v.object({
 	id: v.string(),
