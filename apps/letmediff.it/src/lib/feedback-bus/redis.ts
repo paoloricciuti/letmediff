@@ -1,6 +1,13 @@
 import { Redis } from '@upstash/redis';
 import { FeedbackBus, type FeedbackHandler, type FeedbackMessage } from './types';
 
+function parse_feedback_message(message: unknown): FeedbackMessage | undefined {
+	const parsed = typeof message === 'string' ? JSON.parse(message) : message;
+	return Array.isArray(parsed) && parsed.every((item) => typeof item === 'string')
+		? parsed
+		: undefined;
+}
+
 export class RedisFeedbackBus extends FeedbackBus {
 	#redis: Redis;
 
@@ -18,10 +25,13 @@ export class RedisFeedbackBus extends FeedbackBus {
 	}
 
 	async subscribe(id: string, handler: FeedbackHandler) {
-		const subscription = this.#redis.subscribe<string>(this.#get_channel(id));
+		const subscription = this.#redis.subscribe<unknown>(this.#get_channel(id));
 		subscription.on('message', ({ message }) => {
 			try {
-				handler(JSON.parse(message));
+				const feedback = parse_feedback_message(message);
+				if (feedback) {
+					handler(feedback);
+				}
 			} catch {
 				// Ignore malformed pub/sub messages for this channel.
 			}
