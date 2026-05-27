@@ -60,6 +60,7 @@
 		grid-template-columns: auto minmax(0, 1fr);
 		grid-template-rows: auto auto;
 		column-gap: 0.375rem;
+		row-gap: var(--space-xs);
 		align-items: center;
 		width: 100%;
 		padding: 0.25rem;
@@ -68,9 +69,10 @@
 	}
 
 	small {
-		grid-column: 1 / -1;
+		grid-column: 2 / -1;
 		font-size: 0.625rem;
 		padding-left: 0.375rem;
+		color: var(--green);
 	}
 
 	.sr-only {

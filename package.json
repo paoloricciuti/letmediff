@@ -4,6 +4,7 @@
 	"description": "",
 	"main": "index.js",
 	"scripts": {
+		"dev": "pnpm --filter letmediff.it run dev",
 		"release": "changeset publish",
 		"changeset:version": "changeset version && pnpm --filter letmediff run update:version && git add --all"
 	},
