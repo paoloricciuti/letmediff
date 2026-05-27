@@ -6,6 +6,7 @@ import { McpServer } from 'tmcp';
 import { tool } from 'tmcp/utils';
 import * as v from 'valibot';
 import { create_git_checkpoint_store } from './git.js';
+import package_json from '../package.json' with { type: 'json' };
 
 const WEBSITE_URL = process.env.URL ?? 'https://letmediff.it';
 
@@ -13,10 +14,12 @@ const created_schema = v.object({
 	id: v.string(),
 });
 
+const { name, version } = package_json;
+
 const server = new McpServer(
 	{
-		name: 'letmediff',
-		version: '0.0.1',
+		name,
+		version,
 	},
 	{
 		adapter: new ValibotJsonSchemaAdapter(),
