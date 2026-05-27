@@ -1,5 +1,11 @@
 # letmediff
 
+## 0.0.8
+
+### Patch Changes
+
+- c181312: fix: describe the steps better
+
 ## 0.0.7
 
 ### Patch Changes
