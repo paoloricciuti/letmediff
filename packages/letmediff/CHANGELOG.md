@@ -1,5 +1,11 @@
 # letmediff
 
+## 0.0.6
+
+### Patch Changes
+
+- 3e5607b: fix: use the right website
+
 ## 0.0.5
 
 ### Patch Changes
