@@ -1,5 +1,14 @@
 # letmediff
 
+## 0.0.7
+
+### Patch Changes
+
+- caee1e4: fix: cleanup event source listeners
+- 816906a: chore: keep version and name in sync with package.json
+- b93f732: fix: only snapshot paths passed in to speedup get_url
+- c25dc42: fix: defer initial repository load
+
 ## 0.0.6
 
 ### Patch Changes
