@@ -82,13 +82,17 @@
 		{/if}
 		<div
 			{@attach (node) => {
+				const controller = new AbortController();
 				node.addEventListener(
 					'animationend',
 					() => {
 						feedback_flashcard = false;
 					},
-					{ once: true },
+					{ once: true, signal: controller.signal },
 				);
+				return () => {
+					controller.abort();
+				};
 			}}
 			class={['sent-pop', { success: send_feedback.result?.success }]}
 			role="status"
