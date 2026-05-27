@@ -9,13 +9,13 @@
 		"subfolder": "packages/letmediff",
 		"source": "github"
 	},
-	"version": "0.0.8",
+	"version": "0.0.9",
 	"websiteUrl": "https://letmediff.it",
 	"packages": [
 		{
 			"registryType": "npm",
 			"identifier": "letmediff",
-			"version": "0.0.8",
+			"version": "0.0.9",
 			"runtimeHint": "npx",
 			"transport": {
 				"type": "stdio"
