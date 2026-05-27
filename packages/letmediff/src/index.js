@@ -196,13 +196,12 @@ server.tool(
 		}
 		try {
 			const feedback = await feedback_promise;
+			feedbacks.delete(id);
 			return tool.structured({
 				feedback,
 			});
 		} catch (error) {
 			return tool.error(error instanceof Error ? error.message : String(error));
-		} finally {
-			feedbacks.delete(id);
 		}
 	},
 );
