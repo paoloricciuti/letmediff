@@ -5,11 +5,12 @@ import * as v from 'valibot';
 import { controllers } from './controllers';
 import default_diff from './diff.json' with { type: 'json' };
 import { options } from './shared_diff';
+import { error } from '@sveltejs/kit';
 
 const text_encoder = new TextEncoder();
 
 export const get_diff = query(v.string(), async (id) => {
-	let diffs: v.InferInput<typeof diff_schema> = default_diff;
+	let diffs: v.InferInput<typeof diff_schema> | null = id === 'demo' ? default_diff : null;
 	const string_diff = await storage.getItem(id);
 	if (string_diff) {
 		try {
@@ -18,6 +19,9 @@ export const get_diff = query(v.string(), async (id) => {
 		} catch {
 			// fallback to demo diff
 		}
+	}
+	if (!diffs) {
+		error(404, 'Diff not found'); // this will throw a 404 error if the diff is not found
 	}
 	const rendered_diffs = await Promise.all(
 		diffs.map(async (diff) => ({
