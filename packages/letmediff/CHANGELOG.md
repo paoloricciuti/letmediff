@@ -1,5 +1,11 @@
 # letmediff
 
+## 0.0.5
+
+### Patch Changes
+
+- a0a2cbc: fix: move devdeps to deps
+
 ## 0.0.4
 
 ### Patch Changes
