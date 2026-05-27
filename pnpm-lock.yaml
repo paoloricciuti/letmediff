@@ -222,6 +222,9 @@ importers:
       '@tmcp/adapter-valibot':
         specifier: catalog:mcp
         version: 0.1.6(tmcp@1.19.4(typescript@6.0.3))(valibot@1.4.1(typescript@6.0.3))
+      '@tmcp/transport-stdio':
+        specifier: catalog:mcp
+        version: 0.4.3(tmcp@1.19.4(typescript@6.0.3))
       diff:
         specifier: catalog:deps
         version: 9.0.0
@@ -240,16 +243,13 @@ importers:
       typescript:
         specifier: catalog:tooling
         version: 6.0.3
-    devDependencies:
-      '@tmcp/transport-stdio':
-        specifier: catalog:mcp
-        version: 0.4.3(tmcp@1.19.4(typescript@6.0.3))
-      '@types/node':
-        specifier: catalog:tooling
-        version: 24.12.4
       valibot:
         specifier: catalog:validation
         version: 1.4.1(typescript@6.0.3)
+    devDependencies:
+      '@types/node':
+        specifier: catalog:tooling
+        version: 24.12.4
       vitest:
         specifier: catalog:vitest
         version: 4.1.7(@types/node@24.12.4)(@vitest/browser-playwright@4.1.7)(vite@8.0.14(@types/node@24.12.4))

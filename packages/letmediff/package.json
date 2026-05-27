@@ -31,17 +31,17 @@
 	"dependencies": {
 		"@jsonjoy.com/fs-snapshot": "catalog:deps",
 		"@tmcp/adapter-valibot": "catalog:mcp",
+		"@tmcp/transport-stdio": "catalog:mcp",
 		"diff": "catalog:deps",
 		"eventsource": "catalog:deps",
 		"isomorphic-git": "catalog:deps",
 		"memfs": "catalog:deps",
 		"tmcp": "catalog:mcp",
-		"typescript": "catalog:tooling"
+		"typescript": "catalog:tooling",
+		"valibot": "catalog:validation"
 	},
 	"devDependencies": {
-		"@tmcp/transport-stdio": "catalog:mcp",
 		"@types/node": "catalog:tooling",
-		"valibot": "catalog:validation",
 		"vitest": "catalog:vitest"
 	}
 }
