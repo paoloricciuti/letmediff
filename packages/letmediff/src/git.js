@@ -103,7 +103,13 @@ export class GitCheckpointStore {
 			toSnapshotSync({ fs: snapshot_fs, path: this.path }),
 		);
 		remove_entry(snapshot, '.git');
+		await this.set_baseline_snapshot(snapshot);
+	}
 
+	/**
+	 * @param {SnapshotNode} snapshot
+	 */
+	async set_baseline_snapshot(snapshot) {
 		const { fs } = memfs();
 		fromSnapshotSync(snapshot, { fs, path: this.path });
 
@@ -138,12 +144,22 @@ export class GitCheckpointStore {
 			);
 		}
 
-		const next_snapshot = clone_snapshot(
-			toSnapshotSync({ fs: snapshot_fs, path: this.path }),
+		const requested_filepaths = checkpoint_inputs.flatMap(({ files }) =>
+			files.map((filepath) =>
+				normalize_checkpoint_filepath(filepath, this.path),
+			),
 		);
-		remove_entry(next_snapshot, '.git');
+		const next_snapshot = snapshot_filepaths(
+			this.snapshot,
+			this.path,
+			requested_filepaths,
+		);
 
-		const changed_files = changed_snapshot_files(this.snapshot, next_snapshot);
+		const changed_files = changed_snapshot_filepaths(
+			this.snapshot,
+			next_snapshot,
+			requested_filepaths,
+		);
 		const changed_file_map = new Map(
 			changed_files.map((file) => [file.filepath, file]),
 		);
@@ -186,7 +202,7 @@ export class GitCheckpointStore {
 		}
 
 		this.refresh_future_edits();
-		await this.rebaseline();
+		await this.set_baseline_snapshot(next_snapshot);
 		return checkpoints;
 	}
 
@@ -429,6 +445,38 @@ function changed_snapshot_files(before, after) {
 }
 
 /**
+ * @param {SnapshotNode} before
+ * @param {SnapshotNode} after
+ * @param {string[]} requested_filepaths
+ */
+function changed_snapshot_filepaths(before, after, requested_filepaths) {
+	/** @type {Map<string, SnapshotFileChange>} */
+	const changes = new Map();
+
+	for (const requested_filepath of new Set(requested_filepaths)) {
+		const before_files = snapshot_path_file_map(before, requested_filepath);
+		const after_files = snapshot_path_file_map(after, requested_filepath);
+		const filepaths = new Set([...before_files.keys(), ...after_files.keys()]);
+
+		for (const filepath of filepaths) {
+			const before_file = before_files.get(filepath) ?? null;
+			const after_file = after_files.get(filepath) ?? null;
+			if (files_are_equal(before_file, after_file)) continue;
+
+			changes.set(filepath, {
+				filepath,
+				before_file,
+				after_file,
+			});
+		}
+	}
+
+	return [...changes.values()].sort((a, b) =>
+		a.filepath.localeCompare(b.filepath),
+	);
+}
+
+/**
  * @param {GitCheckpoint} checkpoint
  */
 function clone_checkpoint(checkpoint) {
@@ -457,9 +505,104 @@ function generated_checkpoint_name() {
 
 /**
  * @param {string} filepath
+ * @param {string} [repo_path]
  */
-function normalize_checkpoint_filepath(filepath) {
-	return filepath.replaceAll('\\', '/').replace(/^\.\//, '').replace(/^\/+/, '');
+function normalize_checkpoint_filepath(filepath, repo_path) {
+	if (repo_path && path.isAbsolute(filepath)) {
+		return path.relative(repo_path, filepath).replaceAll('\\', '/');
+	}
+
+	return filepath
+		.replaceAll('\\', '/')
+		.replace(/^\.\//, '')
+		.replace(/^\/+/, '');
+}
+
+/**
+ * @param {SnapshotNode} snapshot
+ * @param {string} repo_path
+ * @param {string[]} filepaths
+ */
+function snapshot_filepaths(snapshot, repo_path, filepaths) {
+	const next_snapshot = clone_snapshot(snapshot);
+
+	for (const filepath of new Set(filepaths)) {
+		if (filepath === '' || filepath === '.') {
+			const full_snapshot = clone_snapshot(
+				toSnapshotSync({ fs: snapshot_fs, path: repo_path }),
+			);
+			remove_entry(full_snapshot, '.git');
+			return full_snapshot;
+		}
+
+		if (filepath === '.git' || filepath.startsWith('.git/')) continue;
+
+		const real_path = path.resolve(repo_path, filepath);
+		if (!is_path_inside(repo_path, real_path)) continue;
+
+		if (!node_fs.existsSync(real_path)) {
+			remove_snapshot_path(next_snapshot, filepath);
+			continue;
+		}
+
+		const file_snapshot = clone_snapshot(
+			toSnapshotSync({ fs: snapshot_fs, path: real_path }),
+		);
+		set_snapshot_path(next_snapshot, filepath, file_snapshot);
+	}
+
+	return next_snapshot;
+}
+
+/**
+ * @param {string} parent
+ * @param {string} child
+ */
+function is_path_inside(parent, child) {
+	const relative = path.relative(parent, child);
+	return (
+		relative === '' ||
+		(!relative.startsWith('..') && !path.isAbsolute(relative))
+	);
+}
+
+/**
+ * @param {SnapshotNode} snapshot
+ * @param {string} filepath
+ * @param {SnapshotNode} value
+ */
+function set_snapshot_path(snapshot, filepath, value) {
+	const parts = filepath.split('/').filter(Boolean);
+	const name = parts.pop();
+	if (!name) return;
+
+	let current = snapshot;
+	for (const part of parts) {
+		const entries = snapshot_folder_entries(current);
+		entries[part] ??= [FOLDER, {}, {}];
+		current = entries[part];
+	}
+
+	snapshot_folder_entries(current)[name] = value;
+}
+
+/**
+ * @param {SnapshotNode} snapshot
+ * @param {string} filepath
+ */
+function remove_snapshot_path(snapshot, filepath) {
+	const parts = filepath.split('/').filter(Boolean);
+	const name = parts.pop();
+	if (!name) return;
+
+	let current = snapshot;
+	for (const part of parts) {
+		const child = snapshot_folder_entries(current)[part];
+		if (!child) return;
+		current = child;
+	}
+
+	delete snapshot_folder_entries(current)[name];
 }
 
 /**
@@ -475,6 +618,41 @@ function snapshot_file_map(snapshot) {
 		});
 	}
 	return files;
+}
+
+/**
+ * @param {SnapshotNode} snapshot
+ * @param {string} filepath
+ */
+function snapshot_path_file_map(snapshot, filepath) {
+	/** @type {Map<string, { content: string, binary: boolean }>} */
+	const files = new Map();
+	const node = snapshot_path(snapshot, filepath);
+	if (!node) return files;
+
+	for (const file of snapshot_files(node, filepath)) {
+		files.set(file.filepath, {
+			content: file.content,
+			binary: file.binary,
+		});
+	}
+
+	return files;
+}
+
+/**
+ * @param {SnapshotNode} snapshot
+ * @param {string} filepath
+ */
+function snapshot_path(snapshot, filepath) {
+	let current = snapshot;
+	for (const part of filepath.split('/').filter(Boolean)) {
+		const child = snapshot_folder_entries(current)[part];
+		if (!child) return null;
+		current = child;
+	}
+
+	return current;
 }
 
 /**

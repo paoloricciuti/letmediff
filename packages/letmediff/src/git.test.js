@@ -121,9 +121,7 @@ describe('git checkpoint store', () => {
 		const checkpoint = await store.merge_checkpoint_if_changed();
 		if (!checkpoint) throw new Error('Expected checkpoint');
 
-		expect(checkpoint.name).toMatch(
-			/^Final changes \d{4}-\d{2}-\d{2}T.*Z$/,
-		);
+		expect(checkpoint.name).toMatch(/^Final changes \d{4}-\d{2}-\d{2}T.*Z$/);
 		expect(checkpoint.diff).toContain('+two');
 		expect(store.read_checkpoints().map(({ name }) => name)).toEqual([
 			checkpoint.name,
@@ -271,6 +269,30 @@ describe('git checkpoint store', () => {
 			'Task 2',
 		]);
 		expect(await store.merge_checkpoint_if_changed()).toBeNull();
+	});
+
+	test('bulk checkpoints leave unrequested file changes pending', async () => {
+		const dir = create_temp_dir();
+		write_fixture(dir, 'a.txt', 'one\n');
+		write_fixture(dir, 'b.txt', 'one\n');
+
+		const store = await create_git_checkpoint_store(dir);
+		write_fixture(dir, 'a.txt', 'two\n');
+		write_fixture(dir, 'b.txt', 'two\n');
+
+		const first_checkpoints = await store.store_checkpoints([
+			{ name: 'Task 1', files: ['./a.txt'] },
+		]);
+		const second_checkpoints = await store.store_checkpoints([
+			{ name: 'Task 2', files: ['./b.txt'] },
+		]);
+
+		expect(first_checkpoints).toHaveLength(1);
+		expect(second_checkpoints).toHaveLength(1);
+		expect(first_checkpoints[0]?.diff).toContain('--- a/a.txt');
+		expect(first_checkpoints[0]?.diff).not.toContain('--- a/b.txt');
+		expect(second_checkpoints[0]?.diff).toContain('--- a/b.txt');
+		expect(second_checkpoints[0]?.diff).not.toContain('--- a/a.txt');
 	});
 
 	test('allows the same file in multiple bulk checkpoints and tracks future edits', async () => {
