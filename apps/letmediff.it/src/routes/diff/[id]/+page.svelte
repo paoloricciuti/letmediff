@@ -116,7 +116,8 @@
 
 	<nav class="cp-rail" aria-label="Checkpoints">
 		<div class="cp-rail-track">
-			{#each diffs as checkpoint, i (checkpoint.created_at)}
+			<!-- eslint-disable-next-line svelte/require-each-key -->
+			{#each diffs as checkpoint, i}
 				{@const cp_id = `cp_${String(i + 1).padStart(2, '0')}`}
 				<a
 					onclick={() => {
@@ -134,7 +135,8 @@
 	</nav>
 
 	<main class="stage">
-		{#each diffs as checkpoint, i (checkpoint.created_at)}
+		<!-- eslint-disable-next-line svelte/require-each-key -->
+		{#each diffs as checkpoint, i}
 			{@const id = `${String(i + 1).padStart(2, '0')}`}
 			{@const cp_id = `cp_${id}`}
 			<details class="cp" id={cp_id} bind:open={details_open[i]}>
@@ -238,7 +240,8 @@
 					></div>
 					{#if !loaded[i]}
 						<div class="ssr">
-							{#each checkpoint.diff as diffed (diffed.fileDiff.name)}
+							<!-- eslint-disable-next-line svelte/require-each-key -->
+							{#each checkpoint.diff as diffed}
 								<diff-view
 									style:--edits={get_future_edits_sentence(diffed.fileDiff.name, checkpoint)}
 								>
