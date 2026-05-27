@@ -1,5 +1,11 @@
 # letmediff
 
+## 0.0.9
+
+### Patch Changes
+
+- 11ccab9: fix: delete feedback promise only after successful read
+
 ## 0.0.8
 
 ### Patch Changes
