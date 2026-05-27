@@ -1,36 +1,34 @@
-import { controllers } from '../../diff/[id]/controllers';
+import { subscribe_to_feedback, type FeedbackMessage } from '$lib/feedback-bus';
 
 const text_encoder = new TextEncoder();
 
+function send_feedback(controller: ReadableStreamDefaultController, message: FeedbackMessage) {
+	controller.enqueue(text_encoder.encode(`event: feedback\ndata: ${JSON.stringify(message)}\n\n`));
+}
+
 export function GET({ params: { id } }) {
 	console.log('new connection to diff', id);
-	let _controller: ReadableStreamDefaultController | null = null;
+	let unsubscribe: (() => Promise<void> | void) | undefined;
 	return new Response(
 		new ReadableStream({
-			start(controller) {
-				_controller = controller;
-				let set = controllers.get(id);
-				if (!set) {
-					set = new Set();
-					controllers.set(id, set);
-				}
-				set.add(controller);
+			async start(controller) {
+				const subscription = await subscribe_to_feedback(id, (message) => {
+					send_feedback(controller, message);
+				});
+				unsubscribe = subscription.unsubscribe;
 				// send some data to flush headers immediately
 				controller.enqueue(text_encoder.encode(': connected\n\n'));
 			},
-			cancel() {
-				const set = controllers.get(id);
-				if (set) {
-					set.delete(_controller!);
-				}
-			}
+			async cancel() {
+				await unsubscribe?.();
+			},
 		}),
 		{
 			headers: {
 				'Content-Type': 'text/event-stream',
 				'Cache-Control': 'no-cache',
-				Connection: 'keep-alive'
-			}
-		}
+				Connection: 'keep-alive',
+			},
+		},
 	);
 }
