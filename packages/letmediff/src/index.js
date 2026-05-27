@@ -36,6 +36,11 @@ const feedbacks = new Map();
 
 const git_promise = create_git_checkpoint_store(process.cwd());
 
+/**
+ * @type {Awaited<ReturnType<Awaited<typeof git_promise>['store_checkpoints']>> | null}
+ */
+let latest_diff = null;
+
 server.tool(
 	{
 		name: 'get_url',
@@ -71,13 +76,18 @@ server.tool(
 	},
 	async ({ steps }) => {
 		const git = await git_promise;
-		const diff = await git.store_checkpoints(steps);
+		let diff = await git.store_checkpoints(steps);
 
 		if (diff.length === 0) {
-			return tool.error(
-				'No checkpoints to review. Create at least one checkpoint with `create_checkpoint` before requesting a review URL.',
-			);
+			if (latest_diff) {
+				diff = latest_diff;
+			} else {
+				return tool.error(
+					'No checkpoints to review. Create at least one checkpoint with `create_checkpoint` before requesting a review URL.',
+				);
+			}
 		}
+		latest_diff = diff;
 
 		let response;
 		try {
