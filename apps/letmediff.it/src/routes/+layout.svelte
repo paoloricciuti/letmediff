@@ -8,6 +8,7 @@
 	import './global.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import { dev } from '$app/environment';
+	import { PUBLIC_UMAMI_URL, PUBLIC_UMAMI_WEBSITE_ID } from '$env/static/public';
 
 	let { children } = $props();
 </script>
@@ -17,8 +18,8 @@
 	{#if !dev}
 		<script
 			defer
-			src="https://umami.ricciuti.app/script.js"
-			data-website-id="7be7e93b-d509-45ff-9374-e127ae10cd17"
+			src="{PUBLIC_UMAMI_URL}/script.js"
+			data-website-id={PUBLIC_UMAMI_WEBSITE_ID}
 		></script>
 	{/if}
 </svelte:head>

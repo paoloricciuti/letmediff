@@ -47,5 +47,7 @@ catalogs:
   fonts:
     '@fontsource/geist-mono': ^5.2.8
     '@fontsource/geist-sans': ^5.2.5
+  analytics:
+    '@umami/node': ^0.4.0
 allowBuilds:
   esbuild: true

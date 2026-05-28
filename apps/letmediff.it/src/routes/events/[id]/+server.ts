@@ -1,4 +1,5 @@
 import { subscribe_to_feedback, type FeedbackMessage } from '$lib/feedback-bus';
+import { umami } from '$lib/analytics.js';
 
 const text_encoder = new TextEncoder();
 
@@ -7,8 +8,13 @@ function send_feedback(controller: ReadableStreamDefaultController, message: Fee
 }
 
 export function GET({ params: { id } }) {
-	console.log('new connection to diff', id);
 	let unsubscribe: (() => Promise<void> | void) | undefined;
+	umami.track({
+		name: 'events-connected',
+		data: {
+			id,
+		},
+	});
 	return new Response(
 		new ReadableStream({
 			async start(controller) {

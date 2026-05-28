@@ -45,6 +45,7 @@
 		"@fontsource/geist-sans": "catalog:fonts",
 		"@neoconfetti/svelte": "catalog:deps",
 		"@pierre/diffs": "catalog:deps",
+		"@umami/node": "catalog:analytics",
 		"@upstash/redis": "catalog:deps",
 		"unstorage": "catalog:deps",
 		"valibot": "catalog:validation"
