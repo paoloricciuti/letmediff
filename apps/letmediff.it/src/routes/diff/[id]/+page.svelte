@@ -420,13 +420,24 @@
 		color: var(--text-soft);
 	}
 	.sheet {
+		interpolate-size: allow-keywords;
 		background: var(--sheet-scrim);
 		backdrop-filter: saturate(160%) blur(12px);
 		-webkit-backdrop-filter: saturate(160%) blur(12px);
 		border-bottom: 1px solid var(--border);
 	}
+	.sheet::details-content {
+		block-size: 0;
+		overflow: clip;
+		transition:
+			block-size var(--duration-med) var(--ease-out-quart),
+			content-visibility var(--duration-med) allow-discrete;
+	}
 	.sheet[open] {
 		background: linear-gradient(90deg, var(--canvas) 5%, var(--sheet-open), var(--canvas) 95%);
+	}
+	.sheet[open]::details-content {
+		block-size: auto;
 	}
 	.sheet summary {
 		list-style: none;
