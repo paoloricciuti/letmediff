@@ -6,6 +6,9 @@
 	import { SvelteMap } from 'svelte/reactivity';
 	import { get_diff, send_feedback } from '../../diff/[id]/diff.remote';
 	import { get_future_edits_sentence, options } from '../../diff/[id]/shared_diff.js';
+	import { navigating } from '$app/state';
+
+	const is_client_side_navigating = navigating.from;
 
 	let { params } = $props();
 	let feedback = $state('');
@@ -238,7 +241,7 @@
 							);
 						}}
 					></div>
-					{#if !loaded[i]}
+					{#if !loaded[i] && !is_client_side_navigating}
 						<div class="ssr">
 							<!-- eslint-disable-next-line svelte/require-each-key -->
 							{#each checkpoint.diff as diffed}
