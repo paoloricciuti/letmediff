@@ -1,5 +1,11 @@
 # letmediff
 
+## 0.0.10
+
+### Patch Changes
+
+- fd48279: fix: return latest diff if new diff is empty
+
 ## 0.0.9
 
 ### Patch Changes
