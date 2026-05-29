@@ -60,10 +60,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_CONFIG_PROVENANCE: true
 
-# will setup later
-# publish-mcp:
-#   needs: release
-#   if: contains(needs.release.outputs.publishedPackages, '"letmediff"')
-#   uses: ./.github/workflows/publish-mcp.yml
-#   secrets:
-#     MCP_KEY: ${{ secrets.MCP_KEY }}
+  publish-mcp:
+    needs: release
+    if: contains(needs.release.outputs.publishedPackages, '"letmediff"')
+    uses: ./.github/workflows/publish-mcp.yml
+    secrets:
+      MCP_KEY: ${{ secrets.MCP_KEY }}
