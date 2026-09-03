@@ -1,5 +1,11 @@
 # letmediff
 
+## 0.0.11
+
+### Patch Changes
+
+- c2bf4ac: fix: updtate to latest tmcp
+
 ## 0.0.10
 
 ### Patch Changes
